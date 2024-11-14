@@ -1,0 +1,57 @@
+.toggle-active-btn {
+    /* outline: 2px solid lime; */
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+}
+
+/* Specific alignment for breadcrumbs and headers in RTL */
+.breadcrumb {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    justify-content: flex-end !important;
+    text-align: right !important;
+}
+
+.header-operation {
+    text-align: start !important;
+    display: flex;
+    flex-direction: column !important;
+    column-gap: 0.25rem;
+    justify-content: flex-end;
+    align-items: start !important;
+}
+
+/* Set the entire document direction to RTL */
+body {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+th {
+    align-content: center !important;
+    text-align: center !important;
+    /* outline: 2px solid lime; */
+    font-weight: bold;
+}
+
+th::before,
+th::after {
+    margin-right: 1rem;
+    /* outline: 2px solid red; */
+    width: fit-content !important;
+}
+tr {
+    text-align: center;
+}
+
+.form-check {
+    direction: ltr;
+    float: right !important;
+}
+
+/* .crud_bulk_actions_checkbox {
+    float: right !important;
+} */
