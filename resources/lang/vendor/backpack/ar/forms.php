@@ -23,7 +23,7 @@ return [
     // Supplier translations
     'supplier' => 'مورد',
     'suppliers' => 'موردين',
-    "supplier_name" => 'اسم المورد',
+    'supplier_name' => 'اسم المورد',
 
     // Inbound translations
     'inbound' => 'الوارد',
@@ -43,5 +43,11 @@ return [
     'groups' => 'مجموعات',
     'group_code' => 'كود المجموعة',
     'group_name' => 'اسم المجموعة',
+
+
+    // permissions
+    'permissions' => 'الصلاحيات',
+    'roles' => 'الوظائف',
+    'users' => 'المستخدمين',
 
 ];

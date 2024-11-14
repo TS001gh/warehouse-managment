@@ -13,3 +13,10 @@
     :link="backpack_url('customer')" />
 <x-backpack::menu-item title="{{ trans('backpack::forms.' . Str::lower('Suppliers')) }}" icon="la la-truck"
     :link="backpack_url('supplier')" />
+
+<x-backpack::menu-item title="{{ trans('backpack::forms.' . Str::lower('permissions')) }}" icon="la la-key"
+    :link="backpack_url('permission')" />
+<x-backpack::menu-item title="{{ trans('backpack::forms.' . Str::lower('roles')) }}" icon="la la-users"
+    :link="backpack_url('role')" />
+<x-backpack::menu-item title="{{ trans('backpack::forms.' . Str::lower('users')) }}" icon="la la-user"
+    :link="backpack_url('user')" />

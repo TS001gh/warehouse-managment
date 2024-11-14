@@ -8,6 +8,7 @@ use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Backpack\CRUD\app\Library\Widget;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Prologue\Alerts\Facades\Alert;
 
 /**
@@ -31,6 +32,8 @@ class ItemCrudController extends CrudController
      */
     public function setup()
     {
+        Gate::authorize('view', Item::class);
+
         CRUD::setModel(\App\Models\Item::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/item');
         CRUD::setEntityNameStrings(trans("backpack::forms.item"), trans("backpack::forms.items"));
@@ -44,6 +47,7 @@ class ItemCrudController extends CrudController
      */
     protected function setupListOperation()
     {
+        Gate::authorize('view', Item::class);
 
         CRUD::addClause('withoutGlobalScopes');
 
@@ -90,6 +94,8 @@ class ItemCrudController extends CrudController
      */
     protected function setupCreateOperation()
     {
+        Gate::authorize('create', Item::class);
+
         CRUD::setValidation(ItemRequest::class);
         // CRUD::setFromDb(); // set fields from db columns.
         CRUD::field('name')
@@ -147,9 +153,15 @@ class ItemCrudController extends CrudController
      */
     protected function setupUpdateOperation()
     {
+        Gate::authorize('update', Item::class);
+
         $this->setupCreateOperation();
     }
 
+    protected function setupDeleteOperation()
+    {
+        Gate::authorize('delete', Item::class);
+    }
 
     public function toggleActive(Request $request)
     {

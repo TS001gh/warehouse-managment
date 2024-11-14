@@ -10,12 +10,14 @@
     "require": {
         "php": "^8.2",
         "backpack/crud": "^6.7",
+        "backpack/permissionmanager": "^7.2",
         "backpack/pro": "2.0",
         "backpack/theme-tabler": "^1.2",
         "consoletvs/charts": "6.*",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "spatie/laravel-permission": "^6.10"
     },
     "require-dev": {
         "backpack/generators": "^4.0",
