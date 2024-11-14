@@ -130,7 +130,7 @@ class InboundCrudController extends CrudController
 
         // Dispatch the stock adjustment job after creating the Inbound record
         $inbound = $this->crud->getCurrentEntry();
-        // dd($inbound);
+
         AdjustInboundStockJob::dispatch($inbound, 'create');
 
         return $response;

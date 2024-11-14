@@ -28,11 +28,11 @@ Route::group([
     Route::post('item/toggle-active', [ItemCrudController::class, 'toggleActive']);
     Route::post('supplier/toggle-active', [SupplierCrudController::class, 'toggleActive']);
     Route::post('customer/toggle-active', [CustomerCrudController::class, 'toggleActive']);
-    Route::get('charts/inactive-items-chart', 'Charts\InactiveItemsChartChartController@response')->name('charts.inactive-items-chart.index');
-    Route::get('charts/total-inbound-outbound-chart', 'Charts\TotalInboundOutboundChartChartController@response')->name('charts.total-inbound-outbound-chart.index');
-    Route::get('charts/last-month-inbound-outbound-chart', 'Charts\LastMonthInboundOutboundChartChartController@response')->name('charts.last-month-inbound-outbound-chart.index');
-    Route::get('charts/top-exported-items-chart', 'Charts\TopExportedItemsChartChartController@response')->name('charts.top-exported-items-chart.index');
-    Route::get('charts/items-at-minimum-chart', 'Charts\ItemsAtMinimumChartChartController@response')->name('charts.items-at-minimum-chart.index');
+    Route::get('charts/inactive-items-chart', 'Charts\InactiveItemsChartController@response')->name('charts.inactive-items-chart.index');
+    Route::get('charts/total-inbound-outbound-chart', 'Charts\TotalInboundOutboundChartController@response')->name('charts.total-inbound-outbound-chart.index');
+    Route::get('charts/last-month-inbound-outbound-chart', 'Charts\LastMonthInboundOutboundChartController@response')->name('charts.last-month-inbound-outbound-chart.index');
+    Route::get('charts/top-exported-items-chart', 'Charts\TopExportedItemsChartController@response')->name('charts.top-exported-items-chart.index');
+    Route::get('charts/items-at-minimum-chart', 'Charts\ItemsAtMinimumChartController@response')->name('charts.items-at-minimum-chart.index');
 }); // this should be the absolute last line of this file
 
 /**
