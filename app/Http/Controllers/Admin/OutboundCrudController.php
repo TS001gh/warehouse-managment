@@ -44,6 +44,12 @@ class OutboundCrudController extends CrudController
         CRUD::setModel(\App\Models\Outbound::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/outbound');
         CRUD::setEntityNameStrings(trans("backpack::forms.outbound"), trans("backpack::forms.outbounds"));
+        $this->crud->addClause('whereHas', 'item', function ($query) {
+            $query->active();
+        });
+        $this->crud->addClause('whereHas', 'customer', function ($query) {
+            $query->active();
+        });
     }
 
     /**

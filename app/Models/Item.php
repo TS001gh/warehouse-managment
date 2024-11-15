@@ -38,11 +38,16 @@ class Item extends Model
     }
 
 
-    protected static function booted()
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope('active', function (Builder $builder) {
+    //         $builder->where('is_active', true);
+    //     });
+    // }
+
+    static public function scopeActive($query)
     {
-        static::addGlobalScope('active', function (Builder $builder) {
-            $builder->where('is_active', true);
-        });
+        return $query->where('is_active', true);
     }
 
     public function setImageAttribute($value)
@@ -68,13 +73,13 @@ class Item extends Model
     }
 
 
-    public function toggleActiveButton()
-    {
-        $buttonClass = !$this->is_active ? 'btn-danger' : 'btn-success';
-        $toggleIcon = $this->is_active ? 'la-toggle-on' : 'la-toggle-off';
+    // public function toggleActiveButton()
+    // {
+    //     $buttonClass = !$this->is_active ? 'btn-danger' : 'btn-success';
+    //     $toggleIcon = $this->is_active ? 'la-toggle-on' : 'la-toggle-off';
 
-        return '<button class="btn btn-xs ' . $buttonClass . ' toggle-active-btn" data-id="' . $this->id . '" data-model="' . Str::lower(class_basename($this)) . '">' .
-            '<i class="la ' . $toggleIcon . ' ml-3"></i>' .
-            '</button>';
-    }
+    //     return '<button class="btn btn-xs ' . $buttonClass . ' toggle-active-btn" data-id="' . $this->id . '" data-model="' . Str::lower(class_basename($this)) . '">' .
+    //         '<i class="la ' . $toggleIcon . ' ml-3"></i>' .
+    //         '</button>';
+    // }
 }

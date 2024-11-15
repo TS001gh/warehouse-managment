@@ -8,6 +8,7 @@ use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Backpack\CRUD\app\Library\Widget;
 use Illuminate\Http\Request;
+use Prologue\Alerts\Facades\Alert;
 
 /**
  * Class CustomerCrudController
@@ -32,6 +33,7 @@ class CustomerCrudController extends CrudController
         CRUD::setModel(\App\Models\Customer::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/customer');
         CRUD::setEntityNameStrings(trans("backpack::forms.customer"), trans("backpack::forms.customers"));
+        // $this->crud->query->active();
     }
 
     /**
@@ -57,9 +59,13 @@ class CustomerCrudController extends CrudController
         CRUD::column('is_active')->label(trans('backpack::forms.is_active'))->type('boolean')->wrapper(["element" => "span", "class" => "status-cell"]);
 
 
-        CRUD::addButtonFromModelFunction('line', 'toggleActive', 'toggleActiveButton', 'end');
+        CRUD::addButtonFromView('line', 'toggleActive', 'toggleActive', 'after');
 
-        Widget::add()->type('script')->content('assets/js/toggleButton.js');
+
+        // With ajax
+        // CRUD::addButtonFromModelFunction('line', 'toggleActive', 'toggleActiveButton', 'end');
+
+        // Widget::add()->type('script')->content('assets/js/toggleButton.js');
 
 
         /**
@@ -108,41 +114,67 @@ class CustomerCrudController extends CrudController
 
     public function toggleActive(Request $request)
     {
-        $customer = Customer::withoutGlobalScope('active')->find($request->id);
+        $customer = Customer::findOrFail($request->id);
+
         if ($customer) {
             $customer->is_active = !$customer->is_active;
             $customer->save();
 
-
-            return response()->json([
-                'success' => true,
-                'is_active' => $customer->is_active,
-                'message' => $customer->is_active ? 'Customer activated' : 'Customer deactivated',
-            ]);
+            Alert::success($customer->is_active ? 'تم تفعيل العميل بنجاح' : 'تم تعطيل العميل بنجاح')->flash();
+        } else {
+            Alert::error('لم نستطع ايجاد العميل')->flash();
         }
 
-        return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+        return redirect()->back();
     }
+    // public function toggleActive(Request $request)
+    // {
+    //     $customer = Customer::withoutGlobalScope('active')->find($request->id);
+    // if ($customer) {
+    //     $customer->is_active = !$customer->is_active;
+    //     $customer->save();
+
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'is_active' => $customer->is_active,
+    //             'message' => $customer->is_active ? 'Customer activated' : 'Customer deactivated',
+    //         ]);
+    //     }
+
+    //     return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+    // }
 
 
 
     // ================================= api actions ==========================================
     public function getOutbounds($id)
     {
-        $customer = Customer::query()->withoutGlobalScope('active')->findOrFail($id);
+        try {
+            $customer = Customer::query()->findOrFail($id);
+            // Get outbound transactions for the customer and calculate total balance by applying the scope for items
+            // $outbounds = $customer->outbounds()
+            //     ->with(['item' => function ($query) {
+            //         $query->active(); // Apply the 'active' scope to 'item'
+            //     }])
+            //     ->get();
 
-        // Get outbound transactions for the customer and calculate total balance
-        $outbounds = $customer->outbounds()->with(['item' => function ($query) {
-            $query->withoutGlobalScope('active');
-        }])->get();
+            // Without
+            $outbounds = $customer->outbounds()->with('item')->get();
 
-        $totalBalance = $outbounds->sum(function ($outbound) {
-            return $outbound->quantity * $outbound->item->price;
-        });
+            $totalBalance = $outbounds->sum(function ($outbound) {
+                return $outbound->quantity * $outbound->item?->price;
+            });
 
-        return response()->json([
-            'outbounds' => $outbounds,
-            'total_balance' => $totalBalance,
-        ]);
+            return response()->json([
+                'outbounds' => $outbounds,
+                'total_balance' => $totalBalance,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+                'status' => 400,
+            ]);
+        }
     }
 }

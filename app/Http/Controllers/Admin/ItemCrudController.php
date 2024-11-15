@@ -23,7 +23,7 @@ class ItemCrudController extends CrudController
     use \Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
-    // use \Backpack\CRUD\app\Http\Controllers\Operations\BulkDeleteOperation;
+    use \Backpack\CRUD\app\Http\Controllers\Operations\BulkDeleteOperation;
 
     /**
      * Configure the CrudPanel object. Apply settings to all operations.
@@ -49,7 +49,9 @@ class ItemCrudController extends CrudController
     {
         Gate::authorize('view', Item::class);
 
-        CRUD::addClause('withoutGlobalScopes');
+        // How you can apply the local scope
+        // After creating the scope we have create a method to retrieve the active items
+        // $this->crud->query->active();
 
         // CRUD::setFromDb(); // set columns from db columns.
         CRUD::column('name')->label(trans('backpack::forms.item_name'));
@@ -75,10 +77,12 @@ class ItemCrudController extends CrudController
             ->model('App\Models\Group');
 
 
-        CRUD::addButtonFromModelFunction('line', 'toggleActive', 'toggleActiveButton', 'end');
+        CRUD::addButtonFromView('line', 'toggleActive', 'toggleActive', 'after');
 
 
-        Widget::add()->type('script')->content('assets/js/toggleButton.js');
+        // With ajax
+        // CRUD::addButtonFromModelFunction('line', 'toggleActive', 'toggleActiveButton', 'end');
+        // Widget::add()->type('script')->content('assets/js/toggleButton.js');
 
         /**
          * Columns can be defined using the fluent syntax:
@@ -165,21 +169,38 @@ class ItemCrudController extends CrudController
 
     public function toggleActive(Request $request)
     {
-
-        $item = Item::withoutGlobalScope('active')->find($request->id);
+        $item = Item::findOrFail($request->id);
 
         if ($item) {
             $item->is_active = !$item->is_active;
             $item->save();
 
-
-            return response()->json([
-                'success' => true,
-                'is_active' => $item->is_active,
-                'message' => $item->is_active ? 'Item activated' : 'Item deactivated',
-            ]);
+            Alert::success($item->is_active ? 'تم تفعيل المادة بنجاح' : 'تم تعطيل المدة بنجاح')->flash();
+        } else {
+            Alert::error('Item not found.')->flash();
         }
 
-        return response()->json(['success' => false, 'message' => 'Item not found'], 404);
+        return redirect()->back();
     }
+
+    // With using ajax
+    // public function toggleActive(Request $request)
+    // {
+
+    //     $item = Item::query()->findOrFail($request->id);
+
+    //     if ($item) {
+    //         $item->is_active = !$item->is_active;
+    //         $item->save();
+
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'is_active' => $item->is_active,
+    //             'message' => $item->is_active ? 'Item activated' : 'Item deactivated',
+    //         ]);
+    //     }
+
+    //     return response()->json(['success' => false, 'message' => 'Item not found'], 404);
+    // }
 }

@@ -8,6 +8,7 @@ use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Backpack\CRUD\app\Library\Widget;
 use Illuminate\Http\Request;
+use Prologue\Alerts\Facades\Alert;
 
 /**
  * Class SupplierCrudController
@@ -32,6 +33,7 @@ class SupplierCrudController extends CrudController
         CRUD::setModel(\App\Models\Supplier::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/supplier');
         CRUD::setEntityNameStrings(trans("backpack::forms.supplier"), trans("backpack::forms.suppliers"));
+        // $this->crud->query->active();
     }
 
     /**
@@ -56,14 +58,12 @@ class SupplierCrudController extends CrudController
 
         CRUD::column('is_active')->label(trans('backpack::forms.is_active'))->type('boolean')->wrapper(["element" => "span", "class" => "status-cell"]);
 
-
-        CRUD::addButtonFromModelFunction('line', 'toggleActive', 'toggleActiveButton', 'end');
-
-        Widget::add()->type('script')->content('assets/js/toggleButton.js');
+        CRUD::addButtonFromView('line', 'toggleActive', 'toggleActive', 'after');
 
 
-
-
+        // With Ajax
+        // CRUD::addButtonFromModelFunction('line', 'toggleActive', 'toggleActiveButton', 'end');
+        // Widget::add()->type('script')->content('assets/js/toggleButton.js');
 
         /**
          * Columns can be defined using the fluent syntax:
@@ -108,37 +108,57 @@ class SupplierCrudController extends CrudController
     {
         $this->setupCreateOperation();
     }
-
-
     public function toggleActive(Request $request)
     {
-        $supplier = Supplier::withoutGlobalScope('active')->find($request->id);
+        $supplier = Supplier::findOrFail($request->id);
+
         if ($supplier) {
             $supplier->is_active = !$supplier->is_active;
             $supplier->save();
 
-
-            return response()->json([
-                'success' => true,
-                'is_active' => $supplier->is_active,
-                'message' => $supplier->is_active ? 'Supplier activated' : 'Supplier deactivated',
-            ]);
+            Alert::success($supplier->is_active ? 'تم تفعيل المورد بنجاح' : 'تم تعطيل المورد بنجاح')->flash();
+        } else {
+            Alert::error('لم نستطع ايجاد المورد')->flash();
         }
 
-        return response()->json(['success' => false, 'message' => 'Supplier not found'], 404);
+        return redirect()->back();
     }
+
+
+    // With Ajax
+    // public function toggleActive(Request $request)
+    // {
+    //     $supplier = Supplier::withoutGlobalScope('active')->find($request->id);
+    //     if ($supplier) {
+    //         $supplier->is_active = !$supplier->is_active;
+    //         $supplier->save();
+    //         return response()->json([
+    //             'success' => true,
+    //             'is_active' => $supplier->is_active,
+    //             'message' => $supplier->is_active ? 'Supplier activated' : 'Supplier deactivated',
+    //         ]);
+    //     }
+
+    //     return response()->json(['success' => false, 'message' => 'Supplier not found'], 404);
+    // }
 
     // ================================== api actions =====================================
     public function getInbounds($id)
     {
 
         try {
-            $supplier = Supplier::query()->withoutGlobalScope('active')->findOrFail($id);
+            $supplier = Supplier::query()->findOrFail($id);
 
-            // Get inbound transactions for the supplier and calculate total balance
-            $inbounds = $supplier->inbounds()->with(['item' => function ($query) {
-                $query->withoutGlobalScope('active');
-            }])->get();
+            // Get outbound transactions for the customer and calculate total balance by applying the scope for items
+            // $inbounds = $customer->inbounds()
+            //     ->with(['item' => function ($query) {
+            //         $query->active(); // Apply the 'active' scope to 'item'
+            //     }])
+            //     ->get();
+
+            // Without
+            $inbounds = $supplier->inbounds()->with('item')->get();
+
 
             $totalBalance = $inbounds->sum(function ($inbound) {
                 return $inbound->item ? $inbound->quantity * $inbound->item->price : 0;

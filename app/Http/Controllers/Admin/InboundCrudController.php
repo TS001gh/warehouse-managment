@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Requests\InboundRequest;
 use App\Jobs\AdjustStockJobs\AdjustInboundStockJob;
 use App\Models\Inbound;
+use App\Models\Item;
+use App\Models\User;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Backpack\Pro\Http\Controllers\Operations\BulkDeleteOperation;
@@ -46,6 +48,12 @@ class InboundCrudController extends CrudController
         CRUD::setModel(\App\Models\Inbound::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/inbound');
         CRUD::setEntityNameStrings(trans("backpack::forms.inbound"), trans("backpack::forms.inbounds"));
+        $this->crud->addClause('whereHas', 'item', function ($query) {
+            $query->active();
+        });
+        $this->crud->addClause('whereHas', 'supplier', function ($query) {
+            $query->active();
+        });
     }
 
     /**
@@ -56,7 +64,10 @@ class InboundCrudController extends CrudController
      */
     protected function setupListOperation()
     {
+
         // CRUD::setFromDb(); // set columns from db columns.
+
+
         CRUD::column('item_id')
             ->type('select')
             ->label(trans('backpack::forms.item_id'))
