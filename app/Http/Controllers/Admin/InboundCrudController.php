@@ -7,6 +7,11 @@ use App\Jobs\AdjustStockJobs\AdjustInboundStockJob;
 use App\Models\Inbound;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
+use Backpack\Pro\Http\Controllers\Operations\BulkDeleteOperation;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
+use Prologue\Alerts\Facades\Alert;
 
 /**
  * Class InboundCrudController
@@ -29,6 +34,8 @@ class InboundCrudController extends CrudController
     use \Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation {
         destroy as traitDestroy;
     }
+
+    use BulkDeleteOperation;
     /**
      * Configure the CrudPanel object. Apply settings to all operations.
      *
@@ -124,30 +131,69 @@ class InboundCrudController extends CrudController
     }
 
 
+
     public function store()
     {
-        $response = $this->traitStore();
+        $this->crud->hasAccessOrFail('create');
 
-        // Dispatch the stock adjustment job after creating the Inbound record
-        $inbound = $this->crud->getCurrentEntry();
+        DB::beginTransaction();
 
-        AdjustInboundStockJob::dispatch($inbound, 'create');
+        try {
+            $request = $this->crud->validateRequest();
+            $this->crud->registerFieldEvents();
+            $item = $this->crud->create($this->crud->getStrippedSaveRequest($request));
+            $this->data['entry'] = $this->crud->entry = $item;
 
-        return $response;
+            AdjustInboundStockJob::dispatchSync($item, 'create');
+            DB::commit();
+
+            Alert::success('تمت إضافة العنصر وتعديل المخزون بنجاح.')->flash();
+
+            $this->crud->setSaveAction();
+
+            return $this->crud->performSaveAction($item->getKey());
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Failed to store item and adjust stock: ' . $e->getMessage());
+            Alert::error('فشل تخزين العنصر وتعديل المخزون. يرجى المحاولة مرة أخرى.')->flash();
+
+            return redirect()->back()->withInput();
+        }
     }
 
     public function update()
     {
+        $this->crud->hasAccessOrFail('update');
+
         // Retrieve original quantity before update
         $oldQuantity = $this->crud->getCurrentEntry()->quantity;
 
-        $response = $this->traitUpdate();
-        $inbound = $this->crud->getCurrentEntry();
+        DB::beginTransaction();
 
-        // Dispatch the stock adjustment job with old quantity for correct adjustment
-        AdjustInboundStockJob::dispatch($inbound, 'update', $oldQuantity);
+        try {
+            $request = $this->crud->validateRequest();
+            $this->crud->registerFieldEvents();
+            $item = $this->crud->update($this->crud->getCurrentEntryId(), $this->crud->getStrippedSaveRequest($request));
+            $this->data['entry'] = $this->crud->entry = $item;
 
-        return $response;
+            // Dispatch the stock adjustment job with old quantity for correct adjustment
+            AdjustInboundStockJob::dispatchSync($item, 'update', $oldQuantity);
+            DB::commit();
+
+            Alert::success('تم تعديل العنصر وتحديث المخزون بنجاح.')->flash();
+
+            $this->crud->setSaveAction();
+
+            return $this->crud->performSaveAction($item->getKey());
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Failed to update item and adjust stock: ' . $e->getMessage());
+            Alert::error('فشل تعديل العنصر وتحديث المخزون. يرجى المحاولة مرة أخرى.')->flash();
+
+            return redirect()->back()->withInput();
+        }
     }
 
     public function destroy($id)

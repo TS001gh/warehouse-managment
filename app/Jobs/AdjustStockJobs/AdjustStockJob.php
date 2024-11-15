@@ -3,8 +3,11 @@
 namespace App\Jobs\AdjustStockJobs;
 
 use App\Models\Item;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 abstract class AdjustStockJob implements ShouldQueue
 {
@@ -29,6 +32,11 @@ abstract class AdjustStockJob implements ShouldQueue
     {
         $item = Item::find($this->model->item_id);
         if (!$item) return;
+
+        // Simulate an error for testing purposes
+        // if (env('APP_ENV') === 'local') {
+        //     throw new \Exception('Simulated exception for testing.');
+        // }
 
         $quantity = $this->getQuantity();
 
