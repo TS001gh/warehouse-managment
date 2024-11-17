@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\ItemRequest;
+use App\Mail\AdminNotificationMail;
 use App\Models\Item;
+use App\Models\User;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
-use Backpack\CRUD\app\Library\Widget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Prologue\Alerts\Facades\Alert;
+use Illuminate\Support\Facades\Mail;
+
 
 /**
  * Class ItemCrudController
@@ -24,6 +27,9 @@ class ItemCrudController extends CrudController
     use \Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\BulkDeleteOperation;
+    use \Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation {
+        store as traitStore;
+    }
 
     /**
      * Configure the CrudPanel object. Apply settings to all operations.
@@ -48,6 +54,7 @@ class ItemCrudController extends CrudController
     protected function setupListOperation()
     {
         Gate::authorize('view', Item::class);
+
 
         // How you can apply the local scope
         // After creating the scope we have create a method to retrieve the active items
@@ -149,6 +156,20 @@ class ItemCrudController extends CrudController
          */
     }
 
+
+    public function store()
+    {
+        $response = $this->traitStore();
+
+        $admin = User::role('admin')->first();
+
+        $message = 'A new item has been created in the system.';
+
+        Mail::to($admin->email)->send(new AdminNotificationMail($message));
+
+        return $response;
+    }
+
     /**
      * Define what happens when the Update operation is loaded.
      *
@@ -182,6 +203,8 @@ class ItemCrudController extends CrudController
 
         return redirect()->back();
     }
+
+
 
     // With using ajax
     // public function toggleActive(Request $request)

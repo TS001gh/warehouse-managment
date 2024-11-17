@@ -141,8 +141,6 @@ class InboundCrudController extends CrudController
         $this->setupCreateOperation();
     }
 
-
-
     public function store()
     {
         $this->crud->hasAccessOrFail('create');

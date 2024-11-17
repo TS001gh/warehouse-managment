@@ -23,7 +23,8 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+
+        $user = User::factory()->create([
             'name' => 'admin',
             'email' => 'admin@gmail.com',
             'password' => "Admin@123"
@@ -44,5 +45,16 @@ class DatabaseSeeder extends Seeder
 
         // Create 100 outbound records with existing customers
         Outbound::factory(100)->create();
+
+
+        // Run the other seeders
+
+        $this->call([
+            PermissionSeeder::class,
+            RoleSeeder::class,
+        ]);
+
+
+        $user->assignRole('admin');
     }
 }

@@ -33,7 +33,6 @@ body {
 th {
     align-content: center !important;
     text-align: center !important;
-    /* outline: 2px solid lime; */
     font-weight: bold;
 }
 
@@ -55,3 +54,11 @@ tr {
 /* .crud_bulk_actions_checkbox {
     float: right !important;
 } */
+
+.nav-link.dropdown-toggle {
+    display: flex !important;
+    gap: 10px;
+}
+.nav-link.dropdown-toggle .avatar {
+    right: 0 !important;
+}
